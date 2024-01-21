@@ -1,0 +1,3 @@
+# FPING
+
+Is a small dockerized F# application that is supposed to act as a ping proxy. It is listening for pings on the raw socket layer and if it receives a ping, it will itself try to ping the destination ip which has been configured with. If its own ping gets a ICMP reply, it will reply back to the ping it received, thus acting as a relay of sorts. It is intended for the innovation day where applications that might not have access to the direct internet being on a heavily secured LAN needs to ask more privileged devices on the net for help to ping the internet.
