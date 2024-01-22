@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY . ./
 RUN dotnet publish -c Release -o /app
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine-arm32v7
+FROM mcr.microsoft.com/dotnet/aspnet:7.0.15-alpine3.18-arm32v7 AS runtime
 
 # Install cultures (alpine doesn't come with them by default)
 RUN apk add --no-cache icu-libs tzdata bash
