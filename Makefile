@@ -6,10 +6,10 @@
 # run: build
 # 	docker run -d -p 10000:10000/udp --name socket socket
 
-# .PHONY: stop
-# stop:
-# 	docker stop socket
-# 	docker rm socket
+.PHONY: stop-osx
+stop-osx:
+	docker stop fping-osx
+	docker rm fping-osx
 
 # .PHONY: run-local
 # run-local:
@@ -22,3 +22,12 @@
 .PHONY: build-pi
 build-pi:
 	docker build --progress=plain -f docker/pi.Dockerfile . -t fping-pi
+
+.PHONY: build-osx
+build-osx:
+	docker build --progress=plain -f docker/osx-arm.Dockerfile . -t fping-osx
+
+.PHONY: run-osx
+run-osx: build-osx
+	docker run -d --privileged -e "PING_IP=4.4.4.4" --name fping-osx fping-osx
+	docker exec -u root fping-osx sh -c "sysctl -w net.ipv4.icmp_echo_ignore_all=1"
