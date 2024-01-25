@@ -8,6 +8,10 @@ open System.Threading
 open System.Net
 open System.Net.NetworkInformation
 
+type Message =
+    | Ping
+    | Pong
+    | Error
 
 type IcmpListener(ip : string) =
     let destIp = ip
@@ -50,18 +54,18 @@ type IcmpListener(ip : string) =
                                         | _ -> "Unknown"
 
                 // Not sure if this check is even necessary
-                match sourceIPAddress = destIp with
-                | false ->  match this.pingIp() with
-                            | IPStatus.Success -> 
-                                printfn "Received pong from %s, sending icmp reply to %s" destIp sourceIPAddress
-                                let replyBytes = this.createIcmpEchoReply buffer
+                match sourceIPAddress = destIp, this.getMessageType buffer with
+                | false, Ping ->  match this.pingIp() with
+                                    | IPStatus.Success -> 
+                                        printfn "Received pong from %s, sending icmp reply to %s" destIp sourceIPAddress
+                                        let replyBytes = this.createIcmpEchoReply buffer
 
-                                // icmpSocket.SendTo(replyBytes, endpoint.Value) |> ignore
+                                        // icmpSocket.SendTo(replyBytes, endpoint.Value) |> ignore
 
-                                icmpSocket.SendTo(replyBytes, 0, replyBytes.Length, SocketFlags.None, endpoint.Value) |> ignore
+                                        icmpSocket.SendTo(replyBytes, 0, replyBytes.Length, SocketFlags.None, endpoint.Value) |> ignore
 
-                            | _ -> printfn "COULDN'T PING %s" destIp
-                | _ -> printfn "Received a ping from the destination ip %s" destIp
+                                    | _ -> printfn "COULDN'T PING %s" destIp
+                | _, msg -> printfn "Received a ping from the destination ip %s - %A" destIp msg
 
 
 
@@ -75,7 +79,7 @@ type IcmpListener(ip : string) =
     member this.StopListening() =
         icmpSocket.Close()
 
-    member private this.createIcmpEchoReply (requestBuffer: byte []) =
+    member private this.createIcmpEchoReply (requestBuffer : byte []) =
         // Copy the entire request packet for the reply
         let replyBuffer = Array.copy requestBuffer
 
@@ -106,3 +110,8 @@ type IcmpListener(ip : string) =
 
         replyBuffer
 
+    member private this.getMessageType (bytes : byte []) : Message =
+        match bytes.[20] with
+        | 8uy -> Ping
+        | 0uy -> Pong
+        | _ -> Error
