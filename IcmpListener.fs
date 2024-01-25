@@ -27,15 +27,18 @@ type IcmpListener(ip : string) =
     member this.listenForPings() =
         try
             let buffer = Array.zeroCreate<byte> bufferSize
+            let endpoint = ref (IPEndPoint(IPAddress.Any, 0) :> EndPoint)
+            endpoint := new IPEndPoint(IPAddress.Any, 0)
+
             // let endPoint = new IPEndPoint(IPAddress.Any, 0)
 
-            // icmpSocket.Bind(endPoint)
+            icmpSocket.Bind(endpoint.Value)
             // icmpSocket.IOControl((IOControlCode.ReceiveAll : IOControlCode), ([| 1uy; 0uy; 0uy; 0uy |] : byte[]), (null : byte[])) |> ignore
 
             // icmpSocket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0)
 
             while true do
-                let endpoint = ref (IPEndPoint(IPAddress.Any, 0) :> EndPoint)
+                // let endpoint = ref (IPEndPoint(IPAddress.Any, 0) :> EndPoint)
 
                 let receivedBytes = icmpSocket.ReceiveFrom(buffer, endpoint)
                 // Process the received ICMP packet, parse data, etc.
@@ -46,6 +49,7 @@ type IcmpListener(ip : string) =
                                         | :? IPEndPoint as ep -> ep.Address.ToString()
                                         | _ -> "Unknown"
 
+                // Not sure if this check is even necessary
                 match sourceIPAddress = destIp with
                 | false ->  match this.pingIp() with
                             | IPStatus.Success -> 

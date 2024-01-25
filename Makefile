@@ -29,5 +29,5 @@ build-osx:
 
 .PHONY: run-osx
 run-osx: build-osx
-	docker run -d --privileged -e "PING_IP=4.4.4.4" --name fping-osx fping-osx
+	docker run -d --privileged -e "PING_IP=1.1.1.1" --name fping-osx fping-osx
 	docker exec -u root fping-osx sh -c "sysctl -w net.ipv4.icmp_echo_ignore_all=1"
